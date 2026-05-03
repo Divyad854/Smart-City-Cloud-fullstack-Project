@@ -4,6 +4,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
+// ✅ ADD THIS IMPORT
+import Home from "./pages/Home";
+
 // Public Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -34,82 +37,98 @@ import ServiceComplaints from "./pages/service/Complaints";
 import ServiceComplaintDetail from "./pages/service/ComplaintDetail";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-const { user, loading } = useAuth();
+  const { user, loading } = useAuth();
 
-if (loading)
-return ( <div className="loading-screen"> <div className="spinner"></div> <p>Loading...</p> </div>
-);
+  if (loading)
+    return (
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
 
-if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
-if (allowedRoles && !allowedRoles.includes(user.role)) {
-if (user.role === "admin") return <Navigate to="/admin" replace />;
-if (user.role === "service_team") return <Navigate to="/service" replace />;
-return <Navigate to="/citizen" replace />;
-}
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (user.role === "admin") return <Navigate to="/admin" replace />;
+    if (user.role === "service_team") return <Navigate to="/service" replace />;
+    return <Navigate to="/citizen" replace />;
+  }
 
-return children;
+  return children;
 };
 
 const PublicRoute = ({ children }) => {
-const { user, loading } = useAuth();
+  const { user, loading } = useAuth();
 
-if (loading)
-return ( <div className="loading-screen"> <div className="spinner"></div> <p>Loading...</p> </div>
-);
+  if (loading)
+    return (
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
 
-if (user) {
-if (user.role === "admin") return <Navigate to="/admin" replace />;
-if (user.role === "service_team") return <Navigate to="/service" replace />;
-return <Navigate to="/citizen" replace />;
-}
+  // If user already logged in → redirect
+  if (user) {
+    if (user.role === "admin") return <Navigate to="/admin" replace />;
+    if (user.role === "service_team") return <Navigate to="/service" replace />;
+    return <Navigate to="/citizen" replace />;
+  }
 
-return children;
+  return children;
 };
 
 function AppRoutes() {
-return ( <Routes>
+  return (
+    <Routes>
 
-```
-  {/* Public */}
-  <Route path="/" element={<Navigate to="/login" replace />} />
-  <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-  <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-  <Route path="/confirm-email" element={<PublicRoute><ConfirmEmail /></PublicRoute>} />
-  <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      {/* ✅ HOME PAGE ADDED */}
+      <Route path="/" element={<Home />} />
 
-  {/* Citizen */}
-  <Route path="/citizen" element={<ProtectedRoute allowedRoles={["citizen"]}><CitizenDashboard /></ProtectedRoute>} />
-  <Route path="/citizen/report" element={<ProtectedRoute allowedRoles={["citizen"]}><ReportIncident /></ProtectedRoute>} />
-  <Route path="/citizen/complaints" element={<ProtectedRoute allowedRoles={["citizen"]}><MyComplaints /></ProtectedRoute>} />
-  <Route path="/citizen/complaint/:id" element={<ProtectedRoute allowedRoles={["citizen"]}><ComplaintDetail /></ProtectedRoute>} />
+      {/* Public */}
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/confirm-email" element={<PublicRoute><ConfirmEmail /></PublicRoute>} />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
-  {/* Admin */}
-  <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
-  <Route path="/admin/complaints" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaints /></ProtectedRoute>} />
-  <Route path="/admin/complaint/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaintDetail /></ProtectedRoute>} />
-  <Route path="/admin/stats" element={<ProtectedRoute allowedRoles={["admin"]}><AdminStats /></ProtectedRoute>} />
+      {/* Citizen */}
+      <Route path="/citizen" element={<ProtectedRoute allowedRoles={["citizen"]}><CitizenDashboard /></ProtectedRoute>} />
+      <Route path="/citizen/report" element={<ProtectedRoute allowedRoles={["citizen"]}><ReportIncident /></ProtectedRoute>} />
+      <Route path="/citizen/complaints" element={<ProtectedRoute allowedRoles={["citizen"]}><MyComplaints /></ProtectedRoute>} />
+      <Route path="/citizen/complaint/:id" element={<ProtectedRoute allowedRoles={["citizen"]}><ComplaintDetail /></ProtectedRoute>} />
 
-  {/* NEW ADMIN MANAGEMENT ROUTES */}
-  <Route path="/admin/service-members" element={<ProtectedRoute allowedRoles={["admin"]}><ServiceMembers /></ProtectedRoute>} />
-  <Route path="/admin/create-service-member" element={<ProtectedRoute allowedRoles={["admin"]}><CreateServiceMember /></ProtectedRoute>} />
-  <Route path="/admin/teams" element={<ProtectedRoute allowedRoles={["admin"]}><Teams /></ProtectedRoute>} />
-  <Route path="/admin/issue-types" element={<ProtectedRoute allowedRoles={["admin"]}><IssueTypes /></ProtectedRoute>} />
+      {/* Admin */}
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/complaints" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaints /></ProtectedRoute>} />
+      <Route path="/admin/complaint/:id" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaintDetail /></ProtectedRoute>} />
+      <Route path="/admin/stats" element={<ProtectedRoute allowedRoles={["admin"]}><AdminStats /></ProtectedRoute>} />
 
-  {/* Service Team */}
-  <Route path="/service" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceDashboard /></ProtectedRoute>} />
-  <Route path="/service/complaints" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceComplaints /></ProtectedRoute>} />
-  <Route path="/service/complaint/:id" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceComplaintDetail /></ProtectedRoute>} />
+      {/* Admin Management */}
+      <Route path="/admin/service-members" element={<ProtectedRoute allowedRoles={["admin"]}><ServiceMembers /></ProtectedRoute>} />
+      <Route path="/admin/create-service-member" element={<ProtectedRoute allowedRoles={["admin"]}><CreateServiceMember /></ProtectedRoute>} />
+      <Route path="/admin/teams" element={<ProtectedRoute allowedRoles={["admin"]}><Teams /></ProtectedRoute>} />
+      <Route path="/admin/issue-types" element={<ProtectedRoute allowedRoles={["admin"]}><IssueTypes /></ProtectedRoute>} />
 
-  <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Service Team */}
+      <Route path="/service" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceDashboard /></ProtectedRoute>} />
+      <Route path="/service/complaints" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceComplaints /></ProtectedRoute>} />
+      <Route path="/service/complaint/:id" element={<ProtectedRoute allowedRoles={["service_team"]}><ServiceComplaintDetail /></ProtectedRoute>} />
 
-</Routes>
+      {/* ✅ Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
 
-
-);
+    </Routes>
+  );
 }
 
 export default function App() {
-return ( <AuthProvider> <Router> <AppRoutes /> <ToastContainer position="top-right" autoClose={3000} /> </Router> </AuthProvider>
-);
+  return (
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+        <ToastContainer position="top-right" autoClose={3000} />
+      </Router>
+    </AuthProvider>
+  );
 }
